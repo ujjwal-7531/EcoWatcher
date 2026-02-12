@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoWatcher | Management Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .sidebar-link.active {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+        border-right: 4px solid #4ade80;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-slate-100 flex min-h-screen">
+    <aside
+      class="w-64 border-r border-white/10 bg-slate-900/50 flex flex-col fixed h-full"
+    >
+      <div class="p-8">
+        <h1 class="text-2xl font-black text-green-400 tracking-tighter">
+          EcoWatcher
+        </h1>
+        <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">
+          Green Bharat v1.0
+        </p>
+      </div>
+
+      <nav class="flex-1 px-4 space-y-2 mt-4">
+        <button
+          onclick="showTab('dashboard')"
+          id="btn-dashboard"
+          class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white transition"
+        >
+          <span class="text-lg">📊</span> Dashboard
+        </button>
+        <button
+          onclick="showTab('alerts')"
+          id="btn-alerts"
+          class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white transition"
+        >
+          <span class="text-lg">🚨</span> Alert Logs
+        </button>
+        <button
+          onclick="showTab('manage')"
+          id="btn-manage"
+          class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:text-white transition"
+        >
+          <span class="text-lg">📍</span> Manage Zones
+        </button>
+      </nav>
+
+      <div class="p-6 border-t border-white/10 text-center">
+        <p class="text-[10px] text-slate-500">Presentation: Feb 16, 2026</p>
+      </div>
+    </aside>
+
+    <main class="flex-1 ml-64 p-8">
+      <section id="tab-dashboard" class="tab-content">
+        <header class="mb-6">
+          <h2 class="text-2xl font-bold">Live Monitoring Console</h2>
+          <p class="text-slate-400 text-sm">
+            System Health: <span class="text-green-400">Optimal</span>
+          </p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div class="glass-card p-4 rounded-xl">
+            <p class="text-slate-400 text-[10px] uppercase tracking-widest">
+              Total Registered Zones
+            </p>
+            <h2 class="text-3xl font-bold mt-1 text-white">
+              {{ total_zones }}
+            </h2>
+          </div>
+          <div class="glass-card p-4 rounded-xl border-l-4 border-orange-500">
+            <p class="text-slate-400 text-[10px] uppercase tracking-widest">
+              Affected Locations
+            </p>
+            <h2 class="text-3xl font-bold text-white mt-1">
+              {{ breached_zones_count }}
+            </h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          <div class="lg:col-span-4">
+            <h3
+              class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 px-1"
+            >
+              Priority Feed
+            </h3>
+            <div class="flex flex-col gap-3 h-[480px]">
+              {% for item in dashboard_zones %}
+              <div
+                class="glass-card flex-1 p-4 rounded-xl border-l-2 border-slate-800 hover:border-green-500/50 transition-all flex flex-col justify-center"
+              >
+                <div class="flex justify-between items-center">
+                  <span class="font-bold text-sm text-slate-200"
+                    >{{ item.info.name }}</span
+                  >
+                  <span
+                    class="text-[9px] px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-mono"
+                    >LIVE</span
+                  >
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-2">
+                  <p class="text-[10px] text-slate-500">
+                    AQI:
+                    <span class="text-slate-300">{{ item.metrics.aqi }}</span>
+                  </p>
+                  <p class="text-[10px] text-slate-500">
+                    TEMP:
+                    <span class="text-slate-300"
+                      >{{ item.metrics.temp }}°C</span
+                    >
+                  </p>
+                </div>
+              </div>
+              {% endfor %} {% if dashboard_zones|length < 5 %} {% for i in
+              range(5 - dashboard_zones|length) %}
+              <div
+                class="flex-1 border border-dashed border-white/5 rounded-xl"
+              ></div>
+              {% endfor %} {% endif %}
+            </div>
+          </div>
+
+          <div class="lg:col-span-8">
+            <h3
+              class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 px-1"
+            >
+              Geospatial Distribution
+            </h3>
+            <div
+              class="glass-card p-2 rounded-2xl h-[480px] border border-white/10 relative overflow-hidden"
+            >
+              <div
+                class="w-full h-full rounded-xl overflow-hidden bg-slate-900/50"
+              >
+                <script
+                  src="https://cdn.commoninja.com/sdk/latest/commonninja.js"
+                  defer
+                ></script>
+                <div
+                  class="commonninja_component pid-3fe24cec-6e54-4a82-bf63-23975c064120"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-alerts" class="tab-content hidden">
+        <header class="mb-10">
+          <h2 class="text-3xl font-bold text-orange-400">Incident Archive</h2>
+          <p class="text-slate-400">
+            Historical log of all environmental threshold violations.
+          </p>
+        </header>
+
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-white/5 text-slate-400 uppercase text-xs">
+              <tr>
+                <th class="px-6 py-4">Timestamp</th>
+                <th class="px-6 py-4">Zone</th>
+                <th class="px-6 py-4">AQI</th>
+                <th class="px-6 py-4">Temp</th>
+                <th class="px-6 py-4">Reason</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              {% for alert in alerts %}
+              <tr class="hover:bg-white/5 transition">
+                <td class="px-6 py-4 text-slate-400 text-sm">
+                  {{ alert.timestamp }}
+                </td>
+                <td class="px-6 py-4 font-bold text-green-400">
+                  {{ alert.zone_name }}
+                </td>
+                <td class="px-6 py-4">{{ alert.aqi }}</td>
+                <td class="px-6 py-4">{{ alert.temp }}°C</td>
+                <td class="px-6 py-4">
+                  <span
+                    class="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-xs font-bold"
+                    >{{ alert.reason }}</span
+                  >
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-manage" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-10">
+          <div>
+            <h2 class="text-3xl font-bold">Zone Management</h2>
+            <p class="text-slate-400">
+              Add, remove, or modify monitored locations.
+            </p>
+          </div>
+          <button
+            onclick="
+              document.getElementById('zoneModal').classList.remove('hidden')
+            "
+            class="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded-2xl font-bold transition"
+          >
+            + Register New Zone
+          </button>
+        </div>
+
+        <div class="glass-card rounded-3xl overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-white/5 text-slate-400 uppercase text-xs">
+              <tr>
+                <th class="px-6 py-4">Zone Name</th>
+                <th class="px-6 py-4">Coordinates</th>
+                <th class="px-6 py-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              {% for zone in zones %}
+              <tr>
+                <td class="px-6 py-4">
+                  <span class="font-bold text-white">{{ zone.name }}</span>
+                  {% if zone.featured %}<span
+                    class="ml-2 text-[9px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full uppercase"
+                    >Pinned</span
+                  >{% endif %}
+                </td>
+                <td class="px-6 py-4 text-slate-500">
+                  {{ zone.lat }}, {{ zone.lon }}
+                </td>
+                <td class="px-6 py-4 text-right space-x-4">
+                  <a
+                    href="/pin_zone/{{ zone.id }}"
+                    class="text-blue-400 hover:text-blue-300 text-xs font-bold uppercase"
+                  >
+                    {% if zone.featured %}Unpin{% else %}Pin to Dash{% endif %}
+                  </a>
+                  <a
+                    href="/delete_zone/{{ zone.id }}"
+                    class="text-red-500 hover:text-red-400 text-xs font-bold uppercase"
+                    >Delete</a
+                  >
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="zoneModal"
+      class="fixed inset-0 bg-black/90 hidden z-[100] flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-slate-900 border border-white/10 p-10 rounded-[2rem] w-full max-w-md shadow-2xl"
+      >
+        <h2 class="text-2xl font-bold mb-6">New Monitoring Zone</h2>
+        <form action="/add_zone" method="POST" class="space-y-4">
+          <input
+            type="text"
+            name="name"
+            placeholder="Zone Name (e.g. Sector 5)"
+            required
+            class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3"
+          />
+          <div class="grid grid-cols-2 gap-4">
+            <input
+              type="number"
+              step="any"
+              name="lat"
+              placeholder="Latitude"
+              required
+              class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3"
+            />
+            <input
+              type="number"
+              step="any"
+              name="lon"
+              placeholder="Longitude"
+              required
+              class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3"
+            />
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button
+              type="button"
+              onclick="
+                document.getElementById('zoneModal').classList.add('hidden')
+              "
+              class="flex-1 py-3 text-slate-400 hover:text-white"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 bg-green-600 rounded-xl font-bold"
+            >
+              Initialize Zone
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div
+      id="toast-container"
+      class="fixed bottom-5 right-5 z-[200] flex flex-col gap-3"
+    ></div>
+
+    <script>
+      function showTab(tabName) {
+        // Hide all tabs
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((tab) => tab.classList.add("hidden"));
+        // Show selected tab
+        document.getElementById("tab-" + tabName).classList.remove("hidden");
+        // Update Sidebar links
+        document
+          .querySelectorAll(".sidebar-link")
+          .forEach((link) => link.classList.remove("active"));
+        document.getElementById("btn-" + tabName).classList.add("active");
+        // Save current tab to local storage so it stays on refresh
+        localStorage.setItem("activeTab", tabName);
+      }
+
+      // Restore active tab on page load
+      window.onload = () => {
+        const active = localStorage.getItem("activeTab") || "dashboard";
+        showTab(active);
+      };
+
+      // TOAST LOGIC (Still works globally)
+      function showToast(zone, reason) {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = `bg-red-600 text-white px-6 py-4 rounded-2xl shadow-2xl border border-red-400 transform transition-all duration-500 translate-y-10 opacity-0`;
+        toast.innerHTML = `<p class="text-xs uppercase font-black opacity-60">Critical Alert</p><p class="font-bold">${zone}</p><p class="text-xs">${reason}</p>`;
+        container.appendChild(toast);
+        setTimeout(
+          () => toast.classList.remove("translate-y-10", "opacity-0"),
+          100,
+        );
+        setTimeout(() => {
+          toast.classList.add("opacity-0");
+          setTimeout(() => toast.remove(), 500);
+        }, 4000);
+      }
+
+      async function updateDashboard() {
+        try {
+          const response = await fetch("/api/update");
+          const data = await response.json();
+          let alerts = data.filter((z) => z.alert !== null);
+          let counter = document.querySelector(
+            "#tab-dashboard .text-red-400.text-5xl",
+          );
+          if (counter) counter.innerText = alerts.length;
+          alerts.forEach((item) => showToast(item.zone, item.alert));
+        } catch (err) {}
+      }
+      setInterval(updateDashboard, 10000);
+      // Check for URL errors on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get("error") === "limit_reached") {
+          alert(
+            "⚠️ Maximum Pin Limit Reached! Unpin an existing zone to feature this one on the dashboard.",
+          );
+          // Clean the URL so the alert doesn't keep popping up on refresh
+          window.history.replaceState({}, document.title, "/");
+        }
+      });
+    </script>
+  </body>
+</html>
