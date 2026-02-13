@@ -14,6 +14,34 @@ def init_db():
                   temp REAL, humidity REAL, wind REAL, aqi INTEGER, uv REAL, noise REAL, reason TEXT)''')
     conn.commit()
     conn.close()
+    
+# app/database.py
+
+def seed_zones():
+    # 1. Use your existing get_zones function to check if empty
+    existing_zones = get_zones() 
+    
+    if not existing_zones:
+        default_zones = [
+            {"name": "Mumbai Central", "lat": 18.96, "lon": 72.82},
+            {"name": "Delhi Tech Zone", "lat": 28.61, "lon": 77.20},
+            {"name": "Bangalore SEZ", "lat": 12.97, "lon": 77.59},
+            {"name": "Kolkata Hub", "lat": 22.57, "lon": 88.36},
+            {"name": "Chennai Port", "lat": 13.08, "lon": 80.27},
+            {"name": "Hyderabad Hitech", "lat": 17.38, "lon": 78.48},
+            {"name": "Pune Smart City", "lat": 18.52, "lon": 73.85},
+            {"name": "Ahmedabad West", "lat": 23.02, "lon": 72.57},
+            {"name": "Jaipur North", "lat": 26.91, "lon": 75.78},
+            {"name": "Surat Industrial", "lat": 21.17, "lon": 72.83}
+        ]
+        
+        for z in default_zones:
+            # Use your existing add_zone function
+            add_zone(z['name'], z['lat'], z['lon'])
+            
+        print(f"✅ Successfully seeded {len(default_zones)} default zones.")
+    else:
+        print("ℹ️ Database already contains data. Skipping seed.")
 
 # Add this function to toggle the pin status
 def toggle_zone_featured(zone_id):

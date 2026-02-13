@@ -3,8 +3,22 @@ from fastapi import FastAPI, Request, Form, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 import database as db
+import requests
+import json
+from contextlib import asynccontextmanager
+from database import seed_zones
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("🚀 Initializing EcoWatcher Engine...")
+    
+    # Call the function directly (no 'db.' prefix needed if imported this way)
+    seed_zones() 
+    
+    yield
+    print("🛑 Shutting down EcoWatcher Engine...")
+
+app = FastAPI(lifespan=lifespan)
 templates = Jinja2Templates(directory="templates")
 
 # --- Threshold Configuration ---
@@ -48,16 +62,6 @@ def evaluate_alerts(data):
         alerts.append("High Wind Speed")
     
     # 3. Join logic for combined reporting
-    return ", ".join(alerts) if alerts else None
-
-def evaluate_alerts(data):
-    alerts = []
-    if data["aqi"] > 280: alerts.append("Critical AQI")
-    if data["temp"] > 42: alerts.append("Extreme Heat")
-    if data["uv"] > 9: alerts.append("High UV")
-    if data["noise"] > 85: alerts.append("Noise Violation")
-    if data["wind_speed"] > 25: alerts.append("High Wind Speed")
-    
     return ", ".join(alerts) if alerts else None
 
 # --- Routes ---
@@ -126,6 +130,73 @@ async def get_live_updates():
             "alert": reason
         })
     return updates
+
+# Ollama model
+
+@app.post("/api/chat")
+async def eco_chat(request: Request):
+    body = await request.json()
+    user_query = body.get("query")
+    
+    # 1. RETRIEVAL (The 'R' in RAG)
+    # Get all current data to give the AI 'Context'
+    zones = db.get_zones()
+    context_data = "CURRENT ENVIRONMENTAL SNAPSHOT:\n"
+    context_data += "-----------------------------------\n"
+    for z in zones:
+        d = generate_synthetic_data() 
+        context_data += (
+            f"LOCATION: {z['name']}\n"
+            f"- Air Quality (AQI): {d['aqi']}\n"
+            f"- Temperature: {d['temp']}°C\n"
+            f"- Wind Speed: {d['wind_speed']}km/h\n"
+            f"- UV Index: {d['uv']}\n"
+            f"- Ambient Noise: {d['noise']}dB\n"
+            "-----------------------------------\n"
+        )
+
+    # 2. PROMPT ENGINEERING
+    prompt = f"""
+    <start_of_turn>user
+    ROLE: You are the EcoWatcher Strategic Analyst. 
+    CONTEXT: Use the following live telemetry for 6 parameters:
+    {context_data}
+
+    SAFETY CRITERIA:
+    - AQI > 150: High Pollution
+    - Temp > 40: Extreme Heat
+    - Wind > 20: High Wind
+    - UV > 8: Dangerous Radiation
+    - Noise > 85: Noise Pollution
+    - Humidity: Monitor for extreme dryness or saturation.
+
+    INSTRUCTIONS:
+    1. Scan ALL 6 parameters for the requested zone(s).
+    2. If ANY parameter exceeds safety criteria, give alert and solution regarding in formatted manner:
+       "ALERT: [Zone Name] is experiencing [Issue].
+       RECOMMENDATION: [Actionable Advice]."
+    3. Be clinical and precise. No conversational fluff.
+    4. If the query is non-environmental, respond: "Unauthorized Query: Outside Monitoring Scope."
+
+    QUERY: {user_query}
+    <end_of_turn>
+    <start_of_turn>model
+    """
+
+    # 3. OLLAMA CALL
+    try:
+        response = requests.post(
+            "http://localhost:11434/api/generate",
+            json={
+                "model": "gemma3:4b", 
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=10
+        )
+        return {"response": response.json().get("response")}
+    except Exception as e:
+        return {"response": "I'm having trouble connecting to the local sensor intelligence. Is Ollama running?"}
 
 if __name__ == "__main__":
     db.init_db()

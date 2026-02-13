@@ -45,8 +45,16 @@ source myenv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+### 4. AI Integeration (Local LLM)
+EcoWatcher uses **Ollama** with the **Qwen** model for local, private RAG (Retrieval-Augmented Generation).
+### Setup Instructions:
+1. **Install Ollama**: Download from [ollama.com](https://ollama.com).
+2. **Download Gemma**: Run the following in your terminal:
+   ```bash
+   ollama run gemma3:4b
+   ```
 
-### 4. Run the Application
+### 5. Run the Application
 ```bash
 python main.py
 ```
