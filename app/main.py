@@ -90,11 +90,15 @@ async def get_live_updates():
     return updates
 
 from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 1. INITIALIZE HUGGING FACE CLIENT
 client = OpenAI(
     base_url="https://router.huggingface.co/v1", # Hugging Face Proxy
-    api_key="hf_dummyapi" # Your Hugging Face token
+    api_key=os.getenv("HF_API_KEY") # Your Hugging Face token
 )
 
 @app.post("/api/chat")
