@@ -11,8 +11,24 @@
     />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
+      /* Add this to your <style> section */
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.prose th, .prose td {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    text-align: left;
+}
+.prose ul {
+    list-style-type: disc;
+    margin-left: 20px;
+}
       .tab-content {
         animation: fadeIn 0.5s ease-in-out;
       }
@@ -202,8 +218,8 @@
 
         <div class="glass-card rounded-2xl overflow-hidden">
           <table class="w-full text-left text-[11px]">
-            <thead class="bg-white/5 text-slate-500 uppercase tracking-tighter">
-              <tr>
+            <thead class="bg-white/10 text-slate-400 border-b border-white/10">
+              <tr class="text-left uppercase text-[10px] tracking-widest">
                 <th class="p-4">Timestamp</th>
                 <th class="p-4">Zone</th>
                 <th class="p-4">AQI</th>
@@ -211,7 +227,8 @@
                 <th class="p-4">Wind</th>
                 <th class="p-4">UV</th>
                 <th class="p-4">Noise</th>
-                <th class="p-4 text-right">Violation Reason</th>
+                <th class="p-4">Violation Reason</th>
+                <th class="p-4 rounded-tr-xl">Action</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
@@ -234,6 +251,14 @@
                   >
                     {{ alert.reason }}
                   </span>
+                </td>
+                <td class="p-4">
+                  <button
+                    onclick="selectAlertForAI('{{ alert.id }}', '{{ alert.zone_name }}')"
+                    class="text-blue-400 hover:text-white text-[10px] font-bold uppercase p-2 border border-blue-400/20 rounded hover:bg-blue-400/10 transition-all"
+                  >
+                    Analyze 🤖
+                  </button>
                 </td>
               </tr>
               {% endfor %}
@@ -484,8 +509,22 @@
               document.getElementById("chat-box").innerHTML = savedChat;
           }
 
-          setInterval(updateDashboard, 10000);
+          setInterval(updateDashboard, 15000);
       };
+
+      // added new feature to ask ai about the alert with reference of id
+      let currentSelectedAlertId = null;
+
+      function selectAlertForAI(id, zoneName) {
+          currentSelectedAlertId = id;
+          // Switch to AI tab automatically
+          showTab('ai');
+          // Pre-fill the input to make it easy for the user
+          document.getElementById("ai-input").value = `Tell me more about the incident in ${zoneName} (ID: ${id})`;
+
+          // Optional: Show a small label in the chat UI so the user knows an alert is selected
+          showToast("System", `ID ${id} attached to AI context.`);
+      }
 
       async function askAI() {
           const input = document.getElementById("ai-input");
@@ -507,14 +546,21 @@
               const response = await fetch("/api/chat", {
                   method: "POST",
                   headers: {"Content-Type": "application/json"},
-                  body: JSON.stringify({query: query})
+                  body: JSON.stringify({
+                      query: query,
+                      selected_alert_id: currentSelectedAlertId // PASS THE ID HERE
+                  })
               });
               const data = await response.json();
 
-              // 3. Add AI Response
               document.getElementById(loadingId).remove();
-              const aiHTML = `<div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl mr-12 text-blue-50">${data.response}</div>`;
+              const formattedResponse = marked.parse(data.response);
+              const aiHTML = `<div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl mr-12 text-blue-50 prose prose-invert max-w-none">
+                  ${formattedResponse}
+              </div>`;
               chatBox.innerHTML += aiHTML;
+
+              // 3. Add AI Response
 
               // 4. PERSISTENCE: Save the chat to localStorage
               localStorage.setItem("ecoChatHistory", chatBox.innerHTML);
