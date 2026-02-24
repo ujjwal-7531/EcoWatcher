@@ -1,60 +1,52 @@
-# 🌍 EcoWatcher | Green Bharat Hackathon
+# 🌍 EcoWatcher: Real-Time Environmental Monitoring Console
 
-**Project Goal:** A real-time environmental monitoring system that tracks critical parameters across multiple zones to ensure public safety and environmental compliance.
+> **🌐 Live Demo:** [View EcoWatcher Live on Render](https://hack-for-green-bharat-3.onrender.com)
 
----
+EcoWatcher is a comprehensive environmental risk analysis platform designed to monitor and visualize atmospheric data across geographic zones. It combines real-time telemetry simulation with advanced AI-driven risk assessment to help users navigate environmental hazards.
 
-## 🚀 Presentation Features (Feb 16th Prototype)
-- **Synthetic Data Engine:** Simulates real-world sensor data for Temperature, Humidity, Wind Speed, AQI, UV Exposure, and Noise Levels.
-- **Dynamic Alerting:** Automatically detects and logs incidents when parameters cross safety thresholds.
-- **Geospatial Visualization:** Integrated map widget showing zone distribution.
-- **Real-time Toasts:** Instant UI notifications when a simulated "incident" occurs.
-- **Persistent Logging:** Every alert is stored in a SQLite database with a precise timestamp and environmental snapshot.
+## 🚀 Key Features
+* **Live Monitoring Dashboard**: High-fidelity visualization of AQI, Temperature, Humidity, Wind Speed, UV, and Noise.
+* **Geospatial Integration**: Interactive map built with Leaflet.js showcasing zone distributions.
+* **Automated Alert Engine**: Instant detection of threshold breaches (e.g., Extreme Heat, High Pollution).
+* **Eco-AI Advisor**: A context-aware AI assistant (powered by Qwen/Hugging Face) that analyzes specific sensor incidents to provide safety recommendations.
+* **System Management**: Full CRUD capabilities for monitoring zones and a "Factory Reset" feature for fresh deployments.
 
----
 
-## 🛠️ Tech Stack
-- **Backend:** Python 3.x, FastAPI
-- **Database:** SQLite3 (Zero-config, modular)
-- **Frontend:** Jinja2 Templates, Tailwind CSS (for modern UI)
-- **Monitoring:** JavaScript (Asynchronous background polling)
+## 🛠️ Local Setup & Installation
+Follow these steps to set up EcoWatcher on your local machine.
 
----
+### 1. Prerequisites
+* **Python 3.9+** installed on your system.
+* A **Hugging Face API Key** (Free) to power the Eco-AI Advisor.
 
-Follow these steps to get the project running on your local machine:
-
-### 1. Clone the repository
+### 2. Clone and Navigate
 ```bash
-git clone https://github.com/ujjwal-7531/hack-for-green-bharat.git
+git clone //github.com/ujjwal-7531/EcoWatcher.git
 cd EcoWatcher
 ```
-
-### 2. Setup Virtual Environment
+### 3.Create a virtual envirenment
 ```bash
-# Create the environment named 'myenv'
-python -m venv myenv
+# Windows
+python -m venv venv
+venv\Scripts\activate
 
-# Activate the environment
-# Windows:
-myenv\Scripts\activate
-# Mac/Linux:
-source myenv/bin/activate
+# macOS/Linux
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+### 4. install dependencies
 ```bash
 pip install -r requirements.txt
 ```
-### 4. AI Integeration (Local LLM)
-EcoWatcher uses **Ollama** with the **Qwen** model for local, private RAG (Retrieval-Augmented Generation).
-### Setup Instructions:
-1. **Install Ollama**: Download from [ollama.com](https://ollama.com).
-2. **Download Gemma**: Run the following in your terminal:
-   ```bash
-   ollama run gemma3:4b
-   ```
 
-### 5. Run the Application
+### 5.Environment Configuration
+```bash
+Create a .env file in the root directory and paste your API key:
+HF_API_KEY=your_huggingface_token
+```
+
+### 6.Launch the engine
 ```bash
 python main.py
 ```
